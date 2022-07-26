@@ -123,14 +123,95 @@ while @i<=20000
 set statistics io, time on
 select * from parttab where id = 117
 
-select * from parttab where nummer = 117
+select * from parttab where nummer = 1100
+
+
+--extem flexibel, wenn man Grenzen entfernen möchte oder dazunehmen
+
+--------------100---------------------200---------------------------5000-----------------------------
+--neue Grenze
+
+--Tabelle				Dateigruppen			F()							PartSchema
+--NIEE						4te Dgruppe       neuer Bereich					neue Dgruppe angeben
+
+
+--zuerst schema
+--  create partition scheme schemaZahl
+
+alter partition scheme schZahl2  next used bis5000  --kein Änderung an der Tabelle
+
+select $partition.fzahl2(nummer) , min(nummer), max(nummer), count(*)
+from parttab
+group by  $partition.fzahl2(nummer)
+
+-- create partition function fzahl2
+alter partition function fzahl2()  split range (5000)
+
+
+--Grenze rausnehme
+
+--Grenze 100 entfernen
+
+--TAB						F()				Schema          Dgruppe
+--nieee				   ja					nix					nix
+
+--vorher
+
+select $partition.fzahl2(nummer) , min(nummer), max(nummer), count(*)
+from parttab
+group by  $partition.fzahl2(nummer)
+
+
+alter partition function fzahl2() merge range(100)
+
+select * from parttab where id = 10
+select * from parttab where nummer = 5400
+
+
+--Partitionen werden wie Tabellen beahndelt...
+--Partitionen sind eigtl Tabelle
+--Jahresweise 
+create partition function fDatum(datetime)
+as
+RANGE LEFT FOR VALUES('31.12.2021 23:59:59.997 ','',..)
+
+
+
+--Partitionen sind eigtl Tabelle
+--A bis M    N bis S        T bis Z
+
+create partition function fNachname(varchar(50))
+as
+RANGE LEFT FOR VALUES('N','T')
+
+-------------------------M] Maier----------------------------S -------------------
+
+--auch schnell--eigtl wie die sicht..
+create partition scheme schZahl2
+as
+partition fzahl2 all  to ([PRIMARY])
+---                            1           2             3
 
 
 
 
+--Verringern der IO Last
+
+--Kompression: Zeilenkompression , Seitenkompression
+
+--Zeilenkompression lassen sich "Textdaten" besser komprimieren
+--es werden komprimierte DS in weniger Seiten zusammengezogen
+
+--Seitenkompression macht zuerst Zeilenkompression
+--Präfixkompressin
+--typischerweise zwischen 40 bis 60% Kmpression
 
 
-
+--Kompression hat Auswirkungen
+--> bei Abfragen dekompriieren: CPU steigt
+--> man bezahlt mehr RAM mit CPU und hat Platz im RAM für anderes
+--Auswirkung auf Abfragen .. schneller oder gleich oder langsamer
+---es kommt drauf an
 
 
 
